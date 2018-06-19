@@ -1,0 +1,26 @@
+name: Pressure_VQM
+module: Spimescape
+broker: myrna.p8
+endpoints:
+  - name: Pressure_VQM_interface
+    module: EthernetProvider
+    socket_info: ("", 9221)
+    command_terminator: ""
+    response_terminator: "\r\n"
+    cmd_at_reconnect:
+      - "TRIPRST;*OPC?"
+    socket_timeout: 5.0
+    endpoints:
+      - name: pressure_output
+        module: FormatSpime
+        get_str: I1?
+        log_interval: 1200
+        calibration: '1*{}'
+        get_reply_float: True
+
+setup_calls:
+  - target: Pressure_VQM_interface
+    method: on_set
+    args: "on"
+    kwargs:
+        routing_key_specifier: schedule_status
