@@ -1,0 +1,59 @@
+name: Cracker_power_supply
+module: Spimescape
+broker: myrna.p8
+endpoints:
+  - name: Cracker_power_supply_interface
+    module: EthernetProvider
+    socket_info: ("insert IP adress of the power supply", 9221)
+    command_terminator: ""
+    response_terminator: "\r\n"
+    cmd_at_reconnect:
+      - "TRIPRST;*OPC?"
+    socket_timeout: 5.0
+    endpoints:
+      - name: trap_coil_1_current_limit
+        module: FormatSpime
+        get_str: I1?
+        set_str: "I1 {};*OPC?"
+        get_on_set: True
+        log_on_set: True
+        log_interval: 1200
+        calibration: '1*{}'
+        get_reply_float: True
+      - name: trap_coil_1_voltage_limit
+        module: FormatSpime
+        get_str: V1?
+        set_str: "V1 {};*OPC?"
+        get_on_set: True
+        log_on_set: True
+        log_interval: 1200
+        calibration: '1*{}'
+        get_reply_float: True
+      - name: Current_output
+        module: FormatSpime
+        get_str: I1O?
+        log_interval: 30
+        calibration: '1*{}'
+        get_reply_float: True
+      - name: Voltage_output
+        module: FormatSpime
+        get_str: V1O?
+        log_interval: 30
+        calibration: '1*{}'
+        get_reply_float: True
+      - name: trap_coil_1_output_status
+        module: SimpleSCPISpime
+        base_str: OP1
+        get_on_set: True
+        log_on_set: True
+        log_interval: 1200
+        calibration:
+           "1": "enabled"
+           "0": "disabled"
+
+setup_calls:
+  - target: Cracker_power_supply_interface
+    method: on_set
+    args: "on"
+    kwargs:
+        routing_key_specifier: schedule_status

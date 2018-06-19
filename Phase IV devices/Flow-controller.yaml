@@ -1,0 +1,59 @@
+name: Allicat_Flow_Controller
+module: Spimescape
+broker: rabbit_broker
+endpoints:
+  - name: Allicat_Flow_Controller_interface
+    module: EthernetProvider
+    socket_info: ("134.93.131.117", 10001)
+    command_terminator: ""
+    response_terminator: "\r\n"
+    cmd_at_reconnect:
+      - "TRIPRST;*OPC?"
+    socket_timeout: 5.0
+    endpoints:
+      - name: Flow_limit
+        module: FormatSpime
+        get_str: I1?
+        set_str: "I1 {};*OPC?"
+        get_on_set: True
+        log_on_set: True
+        log_interval: 1200
+        calibration: '1*{}'
+        get_reply_float: True
+      - name: Voltage_limit
+        module: FormatSpime
+        get_str: V1?
+        set_str: "V1 {};*OPC?"
+        get_on_set: True
+        log_on_set: True
+        log_interval: 1200
+        calibration: '1*{}'
+        get_reply_float: True
+      - name: Current_output
+        module: FormatSpime
+        get_str: I1O?
+        log_interval: 30
+        calibration: '1*{}'
+        get_reply_float: True
+      - name: Voltage_output
+        module: FormatSpime
+        get_str: V1O?
+        log_interval: 30
+        calibration: '1*{}'
+        get_reply_float: True
+      - name: Output_status
+        module: SimpleSCPISpime
+        base_str: OP1
+        get_on_set: True
+        log_on_set: True
+        log_interval: 1200
+        calibration:
+           "1": "enabled"
+           "0": "disabled"
+
+setup_calls:
+  - target: Cracker_power_supply_interface
+    method: on_set
+    args: "on"
+    kwargs:
+        routing_key_specifier: schedule_status
